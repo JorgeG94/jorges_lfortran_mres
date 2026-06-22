@@ -1,6 +1,6 @@
 # lfortran MRE — `associate` on a transitively-imported derived-type component
 
-LFortran 0.63.0. Mirrors the rakali build error:
+LFortran 0.63.0. Mirrors my app's build error:
 
 ```
 semantic error: Variable 'epbl' doesn't have any member named, 'enable'.
@@ -22,11 +22,8 @@ Importing the type explicitly (`use inner_mod, only: inner_t`) works.
 Same-file (no `.mod` round-trip) works. It is the transitive `.mod`
 import + `associate` combination that breaks.
 
-In the minimal case lfortran hangs; in the full rakali build the same
-resolution path surfaces as the "doesn't have any member named" semantic
-error — both are the same missing-member-table bug.
 
-## Map to rakali
+## Map to my app
 
 `rki_ocean_setup.F90` does:
 ```fortran
@@ -47,13 +44,3 @@ make good    # just the working variant
 make clean   # remove generated .mod / .o
 ```
 
-## Workaround (real fix in rakali)
-
-Add the type to the existing import in `rki_ocean_setup.F90`:
-```fortran
-use rki_ocean_epbl, only: ocean_epbl_t, parse_epbl_mstar_scheme, &
-                          parse_epbl_vstar_scheme, parse_epbl_combine, &
-                          parse_epbl_lt_scheme
-```
-(The same pattern likely needs `ocean_eos_t`, `scratch_3d_buffer_t`, and any
-other transitively-reached type used through an `associate` elsewhere.)
